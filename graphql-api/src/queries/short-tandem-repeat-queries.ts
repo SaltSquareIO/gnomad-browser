@@ -15,6 +15,7 @@ const SUMMARY_FIELDS = [
   'value.associated_diseases',
   'value.stripy_id',
   'value.strchive_id',
+  'value.main_reference_region',
   'value.reference_region',
   'value.reference_repeat_unit',
 ]
