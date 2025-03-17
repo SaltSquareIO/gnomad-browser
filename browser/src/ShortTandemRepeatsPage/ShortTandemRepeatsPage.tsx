@@ -151,12 +151,12 @@ const ShortTandemRepeatsPage = ({ shortTandemRepeats }: ShortTandemRepeatsPagePr
   return (
     <>
       <p>
-        For more information about Tandem Repeats in gnomAD, read our{' '}
+        For more information about Tandem Repeats in gnomAD, see our{' '}
         <a href="https://gnomad.broadinstitute.org/news/2022-01-the-addition-of-short-tandem-repeat-calls-to-gnomad/">
           blog post
         </a>{' '}
         and the{' '}
-        <a href="https://gnomad.broadinstitute.org/news/changelog/">change log for March, 2025</a>.
+        <a href="https://gnomad.broadinstitute.org/news/changelog/">change log for March, 2025</a>
       </p>
 
       <TableWrapper>
