@@ -19,7 +19,7 @@ export const colorByLabels: Record<ColorBy, string> = {
   quality_description: 'GQ: manual review',
   q_score: 'GQ: Q score',
   sex: 'Sex',
-  population: 'Population',
+  population: 'Genetic ancestry group',
 }
 
 const ShortTandemRepeatColorBySelect = ({
