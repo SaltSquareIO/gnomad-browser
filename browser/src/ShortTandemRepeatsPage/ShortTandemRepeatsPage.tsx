@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { BaseTable, ExternalLink, Page } from '@gnomad/ui'
+import { BaseTable, Page } from '@gnomad/ui'
 
 import {
   DatasetId,
@@ -23,7 +23,13 @@ type ShortTandemRepeat = {
     symbol: string
     region: string
   }
+  main_reference_region: {
+    chrom: string
+    start: number
+    stop: number
+  }
   reference_repeat_unit: string
+  strchive_id: string
   associated_diseases: {
     symbol: string
     name: string
@@ -38,7 +44,9 @@ type ShortTandemRepeatsPageProps = {
 
 type NormalizedShortTandemRepeat = {
   id: string
+  main_reference_region: string
   reference_repeat_unit: string
+  strchive_id: string
   region: string
   links: string
   inheritance_modes: string[]
@@ -64,8 +72,14 @@ const INHERITANCE_MODE_ABBREVIATIONS = {
 const columnSpecifiers: ColumnSpecifier<NormalizedShortTandemRepeat>[] = [
   { key: 'id', label: 'ID', tooltip: null, compareValueFunction: stringCompareFunction('id') },
   {
+    key: 'reference_region',
+    label: 'Reference region',
+    tooltip: null,
+    compareValueFunction: stringCompareFunction('reference_region'),
+  },
+  {
     key: 'reference_repeat_unit',
-    label: 'Reference repeat unit',
+    label: 'Repeat unit',
     tooltip: null,
     compareValueFunction: stringCompareFunction('reference_repeat_unit_compare_key'),
   },
@@ -86,19 +100,14 @@ const columnSpecifiers: ColumnSpecifier<NormalizedShortTandemRepeat>[] = [
     label: 'Associated rare disease(s)',
     tooltip: null,
     compareValueFunction: stringCompareFunction('associated_disease_name_compare_key'),
-  },
-  {
-    key: 'links',
-    label: 'Links',
-    tooltip: null,
-    compareValueFunction: () => 0,
-  },
+  }
 ]
 
 const normalizeShortTandemRepeat = (
   shortTandemRepeat: ShortTandemRepeat
 ): NormalizedShortTandemRepeat => {
-  const { id, reference_repeat_unit } = shortTandemRepeat
+  const { id, main_reference_region, reference_repeat_unit, strchive_id } = shortTandemRepeat
+  const reference_region = `${main_reference_region.chrom}:${main_reference_region.start}-${main_reference_region.stop}`
   const region = shortTandemRepeat.gene.region
   const inheritance_modes = Array.from(
     new Set(
@@ -130,7 +139,9 @@ const normalizeShortTandemRepeat = (
 
   return {
     id,
+    reference_region,
     reference_repeat_unit,
+    strchive_id,
     inheritance_modes,
     region,
     links,
@@ -175,39 +186,25 @@ const ShortTandemRepeatsPage = ({ shortTandemRepeats }: ShortTandemRepeatsPagePr
                       {shortTandemRepeat.id}
                     </Link>
                   </th>
-                  <td style={{ minWidth: '35ch' }}>
-                    {shortTandemRepeat.reference_repeat_unit} (
-                    {shortTandemRepeat.reference_repeat_unit.length})
+                  <td style={{ minWidth: '20ch' }}>
+                    {shortTandemRepeat.reference_region}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap' }}>{shortTandemRepeat.region}</td>
+                  <td style={{ minWidth: '22ch', maxWidth: '22ch', wordBreak: 'break-all', overflowWrap: 'break-word' }}>
+                  {shortTandemRepeat.reference_repeat_unit}{' '}({shortTandemRepeat.reference_repeat_unit.length})
+                  </td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    {shortTandemRepeat.region}
+                  </td>
                   <td style={{ whiteSpace: 'nowrap' }}>
                     {shortTandemRepeat.inheritance_modes.join(', ')}
                   </td>
-                  <td style={{ minWidth: '10ch' }}>
+                  <td style={{ minWidth: '40ch' }}>
                     {shortTandemRepeat.associated_diseases
                       .map((disease) => {
                         return (
                           <React.Fragment key={disease.name}>
                             <div style={{ display: 'inline-block', padding: '3px 0px' }}>
                               {disease.symbol}: {disease.name}
-                            </div>
-                          </React.Fragment>
-                        )
-                      })
-                      .flatMap((el: any) => [<br />, el])
-                      .slice(1)}
-                  </td>
-                  <td style={{ minWidth: '10ch' }}>
-                    {shortTandemRepeat.associated_diseases
-                      .map((disease) => {
-                        return (
-                          <React.Fragment key={disease.omim_id}>
-                            <div style={{ display: 'inline-block', padding: '3px 0px' }}>
-                              [
-                              <ExternalLink href={`https://omim.org/entry/${disease.omim_id}`}>
-                                OMIM
-                              </ExternalLink>
-                              ]
                             </div>
                           </React.Fragment>
                         )
@@ -235,7 +232,13 @@ query ${operationName}($datasetId: DatasetId!) {
       symbol
       region
     }
+    main_reference_region {
+      chrom
+      start
+      stop
+    }
     reference_repeat_unit
+    strchive_id
     associated_diseases {
       symbol
       name
