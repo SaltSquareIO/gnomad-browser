@@ -97,7 +97,7 @@ const columnSpecifiers: ColumnSpecifier<NormalizedShortTandemRepeat>[] = [
   },
   {
     key: 'associated_diseases',
-    label: 'Associated rare disease(s)',
+    label: 'Associated disease(s)',
     tooltip: null,
     compareValueFunction: stringCompareFunction('associated_disease_name_compare_key'),
   }
