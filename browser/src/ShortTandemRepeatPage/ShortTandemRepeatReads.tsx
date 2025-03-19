@@ -79,29 +79,26 @@ const ShortTandemRepeatRead = ({ read }: ShortTandemRepeatReadProps) => {
         <AttributeListItem label="Age">
           {read.age || 'Not available for this sample'}
         </AttributeListItem>
-        <AttributeListItem label="PCR protocol">
-          {read.pcr_protocol.replace('pcr', 'PCR').split('_').join(' ')}
-        </AttributeListItem>
         <AttributeListItem label="Allele 1">
-          {read.alleles[0].repeat_unit} repeated {read.alleles[0].repeats} times with a{' '}
+          {read.alleles[0].repeats} x {read.alleles[0].repeat_unit} with confidence interval:{' '}
           {read.alleles[0].repeats_confidence_interval.lower}-
-          {read.alleles[0].repeats_confidence_interval.upper} confidence interval
+          {read.alleles[0].repeats_confidence_interval.upper}
         </AttributeListItem>
         <AttributeListItem label="Allele 2">
           {read.alleles.length > 1 ? (
             <>
-              {read.alleles[1].repeat_unit} repeated {read.alleles[1].repeats} times with a{' '}
+              {read.alleles[1].repeats} x {read.alleles[1].repeat_unit} with confidence interval:{' '}
               {read.alleles[1].repeats_confidence_interval.lower}-
-              {read.alleles[1].repeats_confidence_interval.upper} confidence interval
+              {read.alleles[1].repeats_confidence_interval.upper}
             </>
           ) : (
             'None'
           )}
         </AttributeListItem>
-        <AttributeListItem label="Genotype quality: manual review">
+        <AttributeListItem label="Manual review genotype quality">
           {qualityDescriptionLabels[read.quality_description]}
         </AttributeListItem>
-        <AttributeListItem label="Genotype quality: Q score">
+        <AttributeListItem label="Q genotype quality">
           {read.q_score.toFixed(3)}
         </AttributeListItem>
       </AttributeList>
@@ -361,7 +358,7 @@ const ShortTandemRepeatReadsFilterControlsWrapper = styled.div`
 
 const ShortTandemRepeatReadsFilterControlWrapper = styled.div`
   margin-bottom: 0.5em;
-
+  display: inline-block;
   input {
     display: inline-block;
     width: 12ch;
@@ -406,9 +403,26 @@ const ShortTandemRepeatReadsAllelesFilterControls = ({
   onChangeCallback,
   alleleSizeDistributionRepeatUnits,
 }: ShortTandemRepeatReadsAllelesFilterControlsProps) => {
+  const [inputValues, setInputValues] = useState(
+    value.map(v => ({
+      min_repeats: v.min_repeats === null ? '' : v.min_repeats,
+      max_repeats: v.max_repeats === null ? '' : v.max_repeats
+    }))
+  );
+
+  useEffect(() => {
+    setInputValues(
+      value.map(v => ({
+        min_repeats: v.min_repeats === null ? '' : v.min_repeats,
+        max_repeats: v.max_repeats === null ? '' : v.max_repeats
+      }))
+    );
+  }, [value]);
+
   return (
     <ShortTandemRepeatReadsFilterControlsWrapper>
       {[0, 1].map((alleleIndex) => (
+        <div>
         <ShortTandemRepeatReadsFilterControlWrapper key={`${alleleIndex}`}>
           Allele {alleleIndex + 1}: &nbsp;{' '}
           {/* eslint-disable jsx-a11y/label-has-associated-control */}
@@ -443,14 +457,24 @@ const ShortTandemRepeatReadsAllelesFilterControls = ({
               id={`short-tandem-repeat-reads-filter-allele-${alleleIndex}-min-repeats`}
               min={0}
               max={maxRepeats}
-              value={value[alleleIndex].min_repeats}
+              value={inputValues[alleleIndex].min_repeats}
               onChange={(e: any) => {
-                const newMinRepeats = Math.max(Math.min(Number(e.target.value), maxRepeats), 0)
-                onChangeCallback(
-                  value.map((v, i) =>
-                    i === alleleIndex ? { ...v, min_repeats: newMinRepeats } : v
+                const newInputValues = [...inputValues];
+                newInputValues[alleleIndex] = {
+                  ...newInputValues[alleleIndex],
+                  min_repeats: e.target.value
+                };
+                setInputValues(newInputValues);
+              }}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') {
+                  const newMinRepeats = Math.max(Math.min(Number(e.currentTarget.value), maxRepeats), 0)
+                  onChangeCallback(
+                    value.map((v, i) =>
+                      i === alleleIndex ? { ...v, min_repeats: newMinRepeats } : v
+                    )
                   )
-                )
+                }
               }}
             />
           </Label>{' '}
@@ -461,20 +485,30 @@ const ShortTandemRepeatReadsAllelesFilterControls = ({
               id={`short-tandem-repeat-reads-filter-allele-${alleleIndex}-max-repeats`}
               min={0}
               max={maxRepeats}
-              value={value[alleleIndex].max_repeats}
+              value={inputValues[alleleIndex].max_repeats}
               onChange={(e: any) => {
-                const newMaxRepeats = Math.max(Math.min(Number(e.target.value), maxRepeats), 0)
-                onChangeCallback(
-                  value.map((v, i) =>
-                    i === alleleIndex ? { ...v, max_repeats: newMaxRepeats } : v
+                const newInputValues = [...inputValues];
+                newInputValues[alleleIndex] = {
+                  ...newInputValues[alleleIndex],
+                  max_repeats: e.target.value
+                };
+                setInputValues(newInputValues);
+              }}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') {
+                  const newMaxRepeats = Math.max(Math.min(Number(e.currentTarget.value), maxRepeats), 0)
+                  onChangeCallback(
+                    value.map((v, i) =>
+                      i === alleleIndex ? { ...v, max_repeats: newMaxRepeats } : v
+                    )
                   )
-                )
+                }
               }}
             />
           </Label>
           {/* eslint-enable jsx-a11y/label-has-associated-control */}
-        </ShortTandemRepeatReadsFilterControlWrapper>
-      ))}
+        </ShortTandemRepeatReadsFilterControlWrapper>{alleleIndex === 0 && <br />}</div>))
+      }
     </ShortTandemRepeatReadsFilterControlsWrapper>
   )
 }
